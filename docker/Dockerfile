@@ -1,13 +1,11 @@
-FROM golang:alpine AS builder
-
-ARG branch
-ARG commit
+FROM golang:1.24 AS builder
 
 WORKDIR /build
-COPY . .
-RUN go mod tidy && go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
 
-FROM alpine
+COPY . .
+RUN make build
+
+FROM alpine:latest
 
 EXPOSE 8080/tcp
 EXPOSE 8088/tcp
@@ -18,7 +16,7 @@ EXPOSE 8999/tcp
 EXPOSE 8999/udp
 
 WORKDIR /app
-RUN apk add --no-cache bash openssl zip
+RUN apk update && apk upgrade && apk add --no-cache bash openssl zip
 COPY --from=builder /build/dist/goatak_server /app/goatak_server
 COPY ./cert/*.sh /app/cert/
 COPY ./data /app/data

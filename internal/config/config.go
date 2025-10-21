@@ -51,13 +51,10 @@ func (c *AppConfig) Load(filename ...string) bool {
 func (c *AppConfig) LoadEnv(prefix string) error {
 	return c.k.Load(env.Provider(prefix, ".", func(s string) string {
 		s1 := strings.ToLower(strings.TrimPrefix(s, prefix))
-		for _, pr := range []string{"me_", "ssl_"} {
-			if strings.HasPrefix(s1, pr) {
-				slog.Info("ENV param: " + strings.Replace(s1, "_", ".", 1))
-				return strings.Replace(s1, "_", ".", 1)
-			}
-		}
-		slog.Info("ENV param: " + s1)
+		s1 = strings.Replace(s1, "_", ".", -1)
+		s1 = strings.Replace(s1, "..", "_", -1)
+
+		slog.Info(fmt.Sprintf("env param %s -> %s", s, s1))
 
 		return s1
 	}), nil)
